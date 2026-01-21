@@ -78,7 +78,7 @@
         <div id="ad-modal" class="panel">
             <h3 style="margin-top: 0;">광고</h3>
             <div id="ad-content">여기에 광고가 표시됩니다.</div>
-            <button onclick="closeAd()">닫기기</button>
+            <button onclick="closeAd()">닫기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
@@ -165,7 +165,7 @@
             if (!isPaused && !isGameOver && gameActive) {
                 blocks.push(new Block(Math.random() > 0.3 ? 'white' : 'black', moveSpeed));
             }
-            let nextSpawn = Math.max(300, 1000 - (moveSpeed * 100));
+            let nextSpawn = Math.max(200, 1000 - (moveSpeed * 100));
             setTimeout(spawnBlock, nextSpawn);
         }
 
@@ -259,3 +259,4 @@
     </script>
 </body>
 </html>
+
