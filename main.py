@@ -17,7 +17,7 @@ async def read_index():
 
 @app.get("/Bgggm.mp3")
 async def get_audio():
-    audio_path = os.path.join(BASE_DIR, "Bgggm.mp3")
+    audio_path = os.path.join(BASE_DIR, "templates/Bgggm.mp3")
     if os.path.exists(audio_path):
         return FileResponse(audio_path)
     # 음악 파일이 없어도 게임은 실행되도록 404 리턴
@@ -27,3 +27,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8080))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
+
