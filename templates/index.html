@@ -2,31 +2,46 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>블록 방어 게임</title>
     <style>
         body { 
             margin: 0; overflow: hidden; background: #f4f4f4; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; font-family: 'Malgun Gothic', sans-serif;
+            touch-action: manipulation; /* 더블탭 줌 방지 */
         }
-        #game-wrapper { position: relative; }
+        #game-wrapper { 
+            position: relative; 
+            width: 100%; 
+            max-width: 500px; /* 최대 너비 제한 */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
         canvas { 
             background: #ffffff; border: 3px solid #333; 
             cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            /* 모바일 화면에 꽉 차게 조절 */
+            width: 95vw; 
+            height: auto;
+            max-height: 80vh;
         }
         .panel {
             display: none; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%); background: white; 
-            padding: 30px; border-radius: 15px; border: 3px solid #333; 
+            padding: 20px; border-radius: 15px; border: 3px solid #333; 
             text-align: center; z-index: 100; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-            width: 300px;
+            width: 80%; /* 모바일 대응 너비 */
+            max-width: 300px;
         }
         button { 
-            margin-top: 20px; padding: 12px 30px; background: #333; 
+            margin-top: 15px; padding: 12px 30px; background: #333; 
             color: white; border: none; border-radius: 8px; 
             cursor: pointer; font-weight: bold; font-size: 16px;
         }
-        button:hover { background: #555; }
         
         #ad-content {
             margin: 15px 0; padding: 20px; background: #f9f9f9;
@@ -35,38 +50,33 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 상단 UI 패널 수정 */
         #ui-panel {
-            position: absolute; top: 15px; left: 15px; right: 15px; 
+            position: absolute; top: 10px; width: 95%;
             display: flex; justify-content: space-between; align-items: center;
             pointer-events: none; z-index: 10;
         }
         .info-box {
-            background: rgba(255, 255, 255, 0.9); padding: 8px 15px; 
-            border-radius: 8px; border: 2px solid #333; font-weight: bold; font-size: 14px;
+            background: rgba(255, 255, 255, 0.9); padding: 5px 10px; 
+            border-radius: 8px; border: 2px solid #333; font-weight: bold; font-size: 12px;
         }
-        /* 추가된 안내 문구 스타일 */
-        .tip-box {
-            font-size: 12px; color: #666; font-weight: normal;
-        }
+        .tip-box { font-size: 10px; color: #666; text-align: center; }
         
         #sound-control {
-            position: absolute; bottom: 12px; width: 100%;
+            position: absolute; bottom: 10px; width: 100%;
             display: flex; justify-content: center; z-index: 20;
         }
         #mute-btn {
             background: #444; color: white; border: 2px solid #333;
-            padding: 6px 15px; border-radius: 20px; font-size: 11px;
-            cursor: pointer;
+            padding: 5px 15px; border-radius: 20px; font-size: 10px;
         }
     </style>
 </head>
 <body>
     <div id="game-wrapper">
         <div id="ui-panel">
-            <div id="time-display" class="info-box">생존 시간: 0.0s</div>
-            <div class="tip-box"> 광고 클릭 시 속도가 줄어듭니다</div>
-            <div id="best-display" class="info-box" style="color: #007bff;">최고 기록: 0.0s</div>
+            <div id="time-display" class="info-box">0.0s</div>
+            <div class="tip-box"> 광고 클릭 시<br>속도 감속</div>
+            <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
         </div>
         
         <canvas id="gameCanvas"></canvas>
@@ -76,47 +86,28 @@
         </div>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
-            <h2 style="margin: 0 0 10px 0;">블록 방어 게임</h2>
-            <p style="font-size: 14px; color: #666; margin: 0;">시작하려면 아래 버튼을 누르세요.</p>
+            <h2>블록 방어</h2>
+            <p style="font-size: 14px;">하얀 블록이 선에 닿으면 패배!</p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
         <div id="ad-modal" class="panel">
             <h3 style="margin-top: 0;">광고</h3>
             <div id="ad-content">여기에 광고가 표시됩니다.</div>
-            <button onclick="closeAd()" style="margin-top: 10px;">닫기</button>
+            <button onclick="closeAd()">닫기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
             <h2>GAME OVER</h2>
-            <div id="final-time-val" style="font-size: 24px; font-weight: bold; margin: 15px 0;">0.0s</div>
+            <div id="final-time-val" style="font-size: 24px; font-weight: bold;">0.0s</div>
             <button onclick="location.reload()">다시하기</button>
         </div>
     </div>
 
     <script>
         const bgm = new Audio('Bgggm.mp3'); 
-        bgm.loop = true; 
-        bgm.volume = 0.4;
-        let isMuted = false;
-        let gameActive = false;
-
-        function startGame() {
-            document.getElementById('start-overlay').style.display = 'none';
-            gameActive = true;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            bgm.play().catch(e => console.log("BGM 재생 불가"));
-            startTime = Date.now();
-            spawnBlock();
-            update();
-        }
-
-        function toggleMute(e) {
-            e.stopPropagation();
-            isMuted = !isMuted;
-            bgm.muted = isMuted;
-            document.getElementById('mute-btn').innerText = isMuted ? "🔇 소리 Off" : "🎵 소리 On";
-        }
+        bgm.loop = true; bgm.volume = 0.4;
+        let isMuted = false, gameActive = false;
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(type) {
@@ -142,6 +133,7 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        // 내부 해상도는 고정하여 게임 로직 유지
         canvas.width = 400; canvas.height = 650;
         const groundY = canvas.height - 60; 
 
@@ -150,7 +142,7 @@
         let moveSpeed = 2.0; 
         let startTime = 0, pausedTimeTotal = 0, pauseStartedAt = 0;
         let bestTime = localStorage.getItem('bestSurvivalTime') || 0;
-        document.getElementById('best-display').innerText = `최고 기록: ${parseFloat(bestTime).toFixed(1)}s`;
+        document.getElementById('best-display').innerText = `Best: ${parseFloat(bestTime).toFixed(1)}s`;
 
         class Particle {
             constructor(x, y, color) {
@@ -201,7 +193,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (!isPaused) {
                 let elapsed = (Date.now() - startTime - pausedTimeTotal) / 1000;
-                document.getElementById('time-display').innerText = `생존 시간: ${elapsed.toFixed(1)}s`;
+                document.getElementById('time-display').innerText = `${elapsed.toFixed(1)}s`;
             }
             ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY);
             ctx.strokeStyle = '#ff4d4d'; ctx.lineWidth = 4; ctx.stroke();
@@ -215,7 +207,7 @@
                 if (blocks[i].type === 'white' && blocks[i].y + 50 >= groundY) {
                     isGameOver = true; playSfx('fail'); bgm.pause();
                     let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
-                    document.getElementById('final-time-val').innerText = `버틴 시간: ${finalTime.toFixed(1)}s`;
+                    document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
                     if (finalTime > parseFloat(bestTime)) localStorage.setItem('bestSurvivalTime', finalTime);
                     document.getElementById('game-over-panel').style.display = 'block';
                     return;
@@ -225,10 +217,21 @@
             requestAnimationFrame(update);
         }
 
-        canvas.addEventListener('mousedown', (e) => {
+        // 터치/클릭 공통 입력 처리
+        function handleInput(e) {
             if (!gameActive || isPaused || isGameOver) return;
+            e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
+            // 실제 표시되는 크기와 캔버스 내부 해상도 비율 계산
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const mouseX = (clientX - rect.left) * scaleX;
+            const mouseY = (clientY - rect.top) * scaleY;
+
             for (let i = blocks.length - 1; i >= 0; i--) {
                 const b = blocks[i];
                 if (mouseX >= b.x && mouseX <= b.x + 60 && mouseY >= b.y && mouseY <= b.y + 50) {
@@ -246,7 +249,20 @@
                     break;
                 }
             }
-        });
+        }
+
+        canvas.addEventListener('touchstart', handleInput, {passive: false});
+        canvas.addEventListener('mousedown', handleInput);
+
+        function startGame() {
+            document.getElementById('start-overlay').style.display = 'none';
+            gameActive = true;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            bgm.play().catch(e => console.log("BGM 재생 불가"));
+            startTime = Date.now();
+            spawnBlock();
+            update();
+        }
 
         function closeAd() {
             moveSpeed = Math.max(1.5, moveSpeed - 0.15);
@@ -254,6 +270,13 @@
             isPaused = false; 
             if (!isMuted) bgm.play().catch(() => {});
             document.getElementById('ad-modal').style.display = 'none';
+        }
+
+        function toggleMute(e) {
+            e.stopPropagation();
+            isMuted = !isMuted;
+            bgm.muted = isMuted;
+            document.getElementById('mute-btn').innerText = isMuted ? "🔇 소리 Off" : "🎵 소리 On";
         }
     </script>
 </body>
