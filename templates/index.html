@@ -33,6 +33,7 @@
             cursor: pointer; font-weight: bold; font-size: 16px;
         }
 
+        /* 상단 UI 패널 레이아웃 수정 */
         #ui-panel {
             position: absolute; top: 10px; width: 95%;
             display: flex; justify-content: space-between; align-items: center;
@@ -41,14 +42,14 @@
         .info-box {
             background: rgba(255, 255, 255, 0.9); padding: 5px 10px; 
             border-radius: 8px; border: 2px solid #333; font-weight: bold; font-size: 12px;
-            pointer-events: auto;
+            pointer-events: auto; /* 버튼 클릭을 위해 설정 */
         }
         .right-ui-group { display: flex; align-items: center; gap: 5px; }
         
         #mute-btn {
             background: #444; color: white; border: 2px solid #333;
             padding: 5px 8px; border-radius: 8px; font-size: 10px;
-            cursor: pointer; pointer-events: auto;
+            cursor: pointer; pointer-events: auto; margin-top: 0; /* 기존 마진 제거 */
         }
         .tip-box { font-size: 10px; color: #666; text-align: center; line-height: 1.2; }
     </style>
@@ -57,7 +58,9 @@
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
+            
             <div class="tip-box"> 광고 클릭 시<br>속도 감속</div>
+            
             <div class="right-ui-group">
                 <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
                 <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
@@ -75,7 +78,7 @@
         <div id="ad-modal" class="panel">
             <h3 style="margin-top: 0;">광고</h3>
             <div id="ad-content">여기에 광고가 표시됩니다.</div>
-            <button onclick="closeAd()">닫기</button>
+            <button onclick="closeAd()">닫기기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
@@ -124,33 +127,6 @@
         let bestTime = localStorage.getItem('bestSurvivalTime') || 0;
         document.getElementById('best-display').innerText = `Best: ${parseFloat(bestTime).toFixed(1)}s`;
 
-        class Block {
-            constructor(type, speed) {
-                // 블록 크기 확대 (기존 60x50 -> 80x65)
-                this.width = 80; this.height = 65;
-                this.x = Math.random() * (canvas.width - this.width);
-                this.y = -70; this.type = type; this.speed = speed;
-            }
-            draw() {
-                ctx.save();
-                ctx.fillStyle = this.type === 'white' ? '#FFFFFF' : '#000000';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = this.type === 'white' ? '#333' : '#FFFFFF';
-                // 점박이 위치도 블록 크기에 맞게 재조정
-                [[20, 20], [60, 25], [25, 45], [55, 50]].forEach(p => { 
-                    ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 4, 0, Math.PI*2); ctx.fill(); 
-                });
-                if(this.type === 'black') {
-                    ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText("광고", this.x + (this.width/2), this.y + (this.height/2) + 7);
-                }
-                ctx.restore();
-            }
-            update() { if (!isPaused && !isGameOver && gameActive) this.y += this.speed; }
-        }
-
-        // --- (나머지 파티클, 스폰 로직 등은 동일하게 유지) ---
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y; this.color = color;
@@ -163,15 +139,37 @@
             draw() { ctx.save(); ctx.globalAlpha = this.life; ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.restore(); }
         }
 
+        class Block {
+            constructor(type, speed) {
+                this.width = 60; this.height = 50;
+                this.x = Math.random() * (canvas.width - this.width);
+                this.y = -60; this.type = type; this.speed = speed;
+            }
+            draw() {
+                ctx.save();
+                ctx.fillStyle = this.type === 'white' ? '#FFFFFF' : '#000000';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(this.x, this.y, this.width, this.height);
+                ctx.fillStyle = this.type === 'white' ? '#333' : '#FFFFFF';
+                [[15, 15], [45, 20], [20, 35], [40, 40]].forEach(p => { ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 3, 0, Math.PI*2); ctx.fill(); });
+                if(this.type === 'black') {
+                    ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText("광고", this.x + 30, this.y + 32);
+                }
+                ctx.restore();
+            }
+            update() { if (!isPaused && !isGameOver && gameActive) this.y += this.speed; }
+        }
+
         function spawnBlock() {
             if (!isPaused && !isGameOver && gameActive) {
                 blocks.push(new Block(Math.random() > 0.3 ? 'white' : 'black', moveSpeed));
             }
-            let nextSpawn = Math.max(300, 1500 - (moveSpeed * 100));
+            let nextSpawn = Math.max(300, 1000 - (moveSpeed * 100));
             setTimeout(spawnBlock, nextSpawn);
         }
 
-        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.15; }, 1000);
+        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.05; }, 1000);
 
         function update() {
             if (isGameOver || !gameActive) return;
@@ -189,8 +187,7 @@
             }
             for (let i = blocks.length - 1; i >= 0; i--) {
                 blocks[i].update(); blocks[i].draw();
-                // 패배 판정 높이 수정
-                if (blocks[i].type === 'white' && blocks[i].y + blocks[i].height >= groundY) {
+                if (blocks[i].type === 'white' && blocks[i].y + 50 >= groundY) {
                     isGameOver = true; playSfx('fail'); bgm.pause();
                     let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
                     document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
@@ -215,15 +212,14 @@
 
             for (let i = blocks.length - 1; i >= 0; i--) {
                 const b = blocks[i];
-                // 커진 블록 크기에 맞게 클릭 판정
-                if (mouseX >= b.x && mouseX <= b.x + b.width && mouseY >= b.y && mouseY <= b.y + b.height) {
+                if (mouseX >= b.x && mouseX <= b.x + 60 && mouseY >= b.y && mouseY <= b.y + 50) {
                     if (b.type === 'white') {
                         playSfx('white');
-                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+(b.width/2), b.y+(b.height/2), '#CCCCCC'));
+                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, '#CCCCCC'));
                         blocks.splice(i, 1);
                     } else {
                         playSfx('black');
-                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+(b.width/2), b.y+(b.height/2), '#333333'));
+                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, '#333333'));
                         blocks.splice(i, 1);
                         isPaused = true; bgm.pause(); pauseStartedAt = Date.now();
                         setTimeout(() => { document.getElementById('ad-modal').style.display = 'block'; }, 100);
@@ -247,7 +243,7 @@
         }
 
         function closeAd() {
-            moveSpeed = Math.max(1.5, moveSpeed - 0.2); // 속도 감소 폭도 조금 늘림
+            moveSpeed = Math.max(1.5, moveSpeed - 0.15);
             pausedTimeTotal += (Date.now() - pauseStartedAt);
             isPaused = false; 
             if (!isMuted) bgm.play().catch(() => {});
