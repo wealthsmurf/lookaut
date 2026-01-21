@@ -9,47 +9,31 @@
             margin: 0; overflow: hidden; background: #f4f4f4; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; font-family: 'Malgun Gothic', sans-serif;
-            touch-action: manipulation; /* 더블탭 줌 방지 */
+            touch-action: manipulation;
         }
         #game-wrapper { 
-            position: relative; 
-            width: 100%; 
-            max-width: 500px; /* 최대 너비 제한 */
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: relative; width: 100%; max-width: 500px; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         canvas { 
             background: #ffffff; border: 3px solid #333; 
-            cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            /* 모바일 화면에 꽉 차게 조절 */
-            width: 95vw; 
-            height: auto;
-            max-height: 80vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            width: 95vw; height: auto; max-height: 80vh;
         }
         .panel {
             display: none; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%); background: white; 
             padding: 20px; border-radius: 15px; border: 3px solid #333; 
             text-align: center; z-index: 100; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-            width: 80%; /* 모바일 대응 너비 */
-            max-width: 300px;
+            width: 80%; max-width: 300px;
         }
         button { 
-            margin-top: 15px; padding: 12px 30px; background: #333; 
+            padding: 12px 25px; background: #333; 
             color: white; border: none; border-radius: 8px; 
             cursor: pointer; font-weight: bold; font-size: 16px;
         }
-        
-        #ad-content {
-            margin: 15px 0; padding: 20px; background: #f9f9f9;
-            border: 1px dashed #bbb; border-radius: 8px;
-            font-size: 14px; color: #555; min-height: 80px;
-            display: flex; align-items: center; justify-content: center;
-        }
 
+        /* 상단 UI 패널 레이아웃 수정 */
         #ui-panel {
             position: absolute; top: 10px; width: 95%;
             display: flex; justify-content: space-between; align-items: center;
@@ -58,32 +42,32 @@
         .info-box {
             background: rgba(255, 255, 255, 0.9); padding: 5px 10px; 
             border-radius: 8px; border: 2px solid #333; font-weight: bold; font-size: 12px;
+            pointer-events: auto; /* 버튼 클릭을 위해 설정 */
         }
-        .tip-box { font-size: 10px; color: #666; text-align: center; }
+        .right-ui-group { display: flex; align-items: center; gap: 5px; }
         
-        #sound-control {
-            position: absolute; bottom: 10px; width: 100%;
-            display: flex; justify-content: center; z-index: 20;
-        }
         #mute-btn {
             background: #444; color: white; border: 2px solid #333;
-            padding: 5px 15px; border-radius: 20px; font-size: 10px;
+            padding: 5px 8px; border-radius: 8px; font-size: 10px;
+            cursor: pointer; pointer-events: auto; margin-top: 0; /* 기존 마진 제거 */
         }
+        .tip-box { font-size: 10px; color: #666; text-align: center; line-height: 1.2; }
     </style>
 </head>
 <body>
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
-            <div class="tip-box"> 광고 클릭 시<br>속도 감속</div>
-            <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
+            
+            <div class="tip-box">💡 광고 클릭 시<br>속도 감속</div>
+            
+            <div class="right-ui-group">
+                <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
+                <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
+            </div>
         </div>
         
         <canvas id="gameCanvas"></canvas>
-
-        <div id="sound-control">
-            <button id="mute-btn" onclick="toggleMute(event)">🎵 소리 On</button>
-        </div>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
             <h2>블록 방어</h2>
@@ -92,9 +76,9 @@
         </div>
         
         <div id="ad-modal" class="panel">
-            <h3 style="margin-top: 0;">광고</h3>
+            <h3 style="margin-top: 0;">후원 광고</h3>
             <div id="ad-content">여기에 광고가 표시됩니다.</div>
-            <button onclick="closeAd()">닫기</button>
+            <button onclick="closeAd()">광고 확인 완료</button>
         </div>
 
         <div id="game-over-panel" class="panel">
@@ -133,7 +117,6 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        // 내부 해상도는 고정하여 게임 로직 유지
         canvas.width = 400; canvas.height = 650;
         const groundY = canvas.height - 60; 
 
@@ -182,7 +165,7 @@
             if (!isPaused && !isGameOver && gameActive) {
                 blocks.push(new Block(Math.random() > 0.3 ? 'white' : 'black', moveSpeed));
             }
-            let nextSpawn = Math.max(300, 1000 - (moveSpeed * 100));
+            let nextSpawn = Math.max(300, 1500 - (moveSpeed * 100));
             setTimeout(spawnBlock, nextSpawn);
         }
 
@@ -217,18 +200,13 @@
             requestAnimationFrame(update);
         }
 
-        // 터치/클릭 공통 입력 처리
         function handleInput(e) {
             if (!gameActive || isPaused || isGameOver) return;
-            e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            // 실제 표시되는 크기와 캔버스 내부 해상도 비율 계산
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
             const mouseX = (clientX - rect.left) * scaleX;
             const mouseY = (clientY - rect.top) * scaleY;
 
@@ -251,14 +229,14 @@
             }
         }
 
-        canvas.addEventListener('touchstart', handleInput, {passive: false});
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
         canvas.addEventListener('mousedown', handleInput);
 
         function startGame() {
             document.getElementById('start-overlay').style.display = 'none';
             gameActive = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            bgm.play().catch(e => console.log("BGM 재생 불가"));
+            bgm.play().catch(() => {});
             startTime = Date.now();
             spawnBlock();
             update();
@@ -276,9 +254,8 @@
             e.stopPropagation();
             isMuted = !isMuted;
             bgm.muted = isMuted;
-            document.getElementById('mute-btn').innerText = isMuted ? "🔇 소리 Off" : "🎵 소리 On";
+            document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
     </script>
 </body>
 </html>
-
