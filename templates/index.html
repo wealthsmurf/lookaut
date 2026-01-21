@@ -182,7 +182,7 @@
             if (!isPaused && !isGameOver && gameActive) {
                 blocks.push(new Block(Math.random() > 0.3 ? 'white' : 'black', moveSpeed));
             }
-            let nextSpawn = Math.max(300, 1500 - (moveSpeed * 100));
+            let nextSpawn = Math.max(300, 1000 - (moveSpeed * 100));
             setTimeout(spawnBlock, nextSpawn);
         }
 
@@ -281,3 +281,4 @@
     </script>
 </body>
 </html>
+
