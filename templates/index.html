@@ -12,55 +12,64 @@
             touch-action: manipulation;
         }
         #game-wrapper { 
-            position: relative; width: 100%; max-width: 500px; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; 
+            width: 100%; 
+            max-width: 400px; /* 최대 너비를 더 줄임 */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         canvas { 
             background: #ffffff; border: 3px solid #333; 
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            width: 95vw; height: auto; max-height: 80vh;
+            /* 화면 점유율을 80%로 축소 */
+            width: 80vw; 
+            max-width: 360px;
+            height: auto; 
+            max-height: 75vh;
         }
         .panel {
             display: none; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%); background: white; 
             padding: 20px; border-radius: 15px; border: 3px solid #333; 
             text-align: center; z-index: 100; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-            width: 80%; max-width: 300px;
+            width: 75%; max-width: 280px;
         }
         button { 
-            padding: 12px 25px; background: #333; 
+            padding: 10px 20px; background: #333; 
             color: white; border: none; border-radius: 8px; 
-            cursor: pointer; font-weight: bold; font-size: 16px;
+            cursor: pointer; font-weight: bold; font-size: 14px;
         }
 
-        /* 상단 UI 패널 레이아웃 수정 */
         #ui-panel {
-            position: absolute; top: 10px; width: 95%;
+            position: absolute; top: 15px; 
+            width: 80vw; /* 캔버스와 동일한 너비 */
+            max-width: 360px;
             display: flex; justify-content: space-between; align-items: center;
             pointer-events: none; z-index: 10;
         }
         .info-box {
-            background: rgba(255, 255, 255, 0.9); padding: 5px 10px; 
-            border-radius: 8px; border: 2px solid #333; font-weight: bold; font-size: 12px;
-            pointer-events: auto; /* 버튼 클릭을 위해 설정 */
+            background: rgba(255, 255, 255, 0.9); padding: 4px 8px; 
+            border-radius: 6px; border: 2px solid #333; font-weight: bold; font-size: 11px;
+            pointer-events: auto;
         }
-        .right-ui-group { display: flex; align-items: center; gap: 5px; }
+        .right-ui-group { display: flex; align-items: center; gap: 4px; }
         
         #mute-btn {
             background: #444; color: white; border: 2px solid #333;
-            padding: 5px 8px; border-radius: 8px; font-size: 10px;
-            cursor: pointer; pointer-events: auto; margin-top: 0; /* 기존 마진 제거 */
+            padding: 4px 6px; border-radius: 6px; font-size: 9px;
+            cursor: pointer; pointer-events: auto;
         }
-        .tip-box { font-size: 10px; color: #666; text-align: center; line-height: 1.2; }
+        .tip-box { font-size: 9px; color: #666; text-align: center; line-height: 1.1; }
     </style>
 </head>
 <body>
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
-            
-            <div class="tip-box"> 광고 클릭 시<br>속도 감속</div>
-            
+            <div class="tip-box">💡 광고 클릭 시<br>속도 감속</div>
             <div class="right-ui-group">
                 <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
                 <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
@@ -70,20 +79,20 @@
         <canvas id="gameCanvas"></canvas>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
-            <h2>블록 방어</h2>
-            <p style="font-size: 14px;">하얀 블록이 선에 닿으면 패배!</p>
+            <h2 style="font-size: 20px;">블록 방어</h2>
+            <p style="font-size: 13px;">하얀 블록이 선에 닿으면 패배!</p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
         <div id="ad-modal" class="panel">
-            <h3 style="margin-top: 0;">광고</h3>
-            <div id="ad-content">여기에 광고가 표시됩니다.</div>
+            <h3 style="margin-top: 0; font-size: 18px;">광고</h3>
+            <div id="ad-content" style="font-size: 14px; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #eee; margin-bottom: 10px; border-radius: 5px;">여기에 광고가 표시됩니다.</div>
             <button onclick="closeAd()">닫기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
-            <h2>GAME OVER</h2>
-            <div id="final-time-val" style="font-size: 24px; font-weight: bold;">0.0s</div>
+            <h2 style="font-size: 20px;">GAME OVER</h2>
+            <div id="final-time-val" style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">0.0s</div>
             <button onclick="location.reload()">다시하기</button>
         </div>
     </div>
@@ -259,4 +268,3 @@
     </script>
 </body>
 </html>
-
