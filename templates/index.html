@@ -198,7 +198,7 @@
                 
                 blocks.push(new Block(newType, moveSpeed));
             }
-            let nextSpawn = Math.max(200, 1000 - (moveSpeed * 100));
+            let nextSpawn = Math.max(100, 1000 - (moveSpeed * 300));
             setTimeout(spawnBlock, nextSpawn);
         }
 
@@ -295,3 +295,4 @@
     </script>
 </body>
 </html>
+
