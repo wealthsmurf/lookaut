@@ -178,7 +178,7 @@
             setTimeout(spawnBlock, nextSpawn);
         }
 
-        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.15; }, 1000);
+        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.10; }, 1000);
 
         function update() {
             if (isGameOver || !gameActive) return;
@@ -268,6 +268,7 @@
     </script>
 </body>
 </html>
+
 
 
 
