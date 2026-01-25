@@ -14,7 +14,7 @@
         #game-wrapper { 
             position: relative; 
             width: 100%; 
-            max-width: 400px; /* 최대 너비를 더 줄임 */
+            max-width: 400px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -24,7 +24,6 @@
         canvas { 
             background: #ffffff; border: 3px solid #333; 
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            /* 화면 점유율을 80%로 축소 */
             width: 80vw; 
             max-width: 360px;
             height: auto; 
@@ -45,7 +44,7 @@
 
         #ui-panel {
             position: absolute; top: 15px; 
-            width: 80vw; /* 캔버스와 동일한 너비 */
+            width: 80vw; 
             max-width: 360px;
             display: flex; justify-content: space-between; align-items: center;
             pointer-events: none; z-index: 10;
@@ -69,7 +68,7 @@
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
-            <div class="tip-box">💡 광고 클릭 시<br>속도 감속</div>
+            <div class="tip-box">💡 점 하나 박힌 하얀 블록도<br>광고가 나옵니다!</div>
             <div class="right-ui-group">
                 <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
                 <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
@@ -80,7 +79,7 @@
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
             <h2 style="font-size: 20px;">블록 방어</h2>
-            <p style="font-size: 13px;">하얀 블록을 파괴하세요!!</p>
+            <p style="font-size: 13px;">하얀 블록을 파괴하세요!!<br>(20초 후 신규 블록 등장)</p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
@@ -156,11 +155,24 @@
             }
             draw() {
                 ctx.save();
-                ctx.fillStyle = this.type === 'white' ? '#FFFFFF' : '#000000';
+                // 바탕색
+                ctx.fillStyle = (this.type === 'white' || this.type === 'whiteDot') ? '#FFFFFF' : '#000000';
                 ctx.fillRect(this.x, this.y, this.width, this.height);
                 ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = this.type === 'white' ? '#333' : '#FFFFFF';
-                [[15, 15], [45, 20], [20, 35], [40, 40]].forEach(p => { ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 3, 0, Math.PI*2); ctx.fill(); });
+                
+                // 점 그리기
+                ctx.fillStyle = (this.type === 'white' || this.type === 'whiteDot') ? '#333' : '#FFFFFF';
+                
+                if (this.type === 'whiteDot') {
+                    // 20초 후 등장하는 점 하나 블록
+                    ctx.beginPath(); ctx.arc(this.x + 30, this.y + 25, 4, 0, Math.PI*2); ctx.fill();
+                } else if (this.type === 'white' || this.type === 'black') {
+                    // 일반 블록들 (점 4개)
+                    [[15, 15], [45, 20], [20, 35], [40, 40]].forEach(p => { 
+                        ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 3, 0, Math.PI*2); ctx.fill(); 
+                    });
+                }
+
                 if(this.type === 'black') {
                     ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
                     ctx.fillText("광고", this.x + 30, this.y + 32);
@@ -172,7 +184,19 @@
 
         function spawnBlock() {
             if (!isPaused && !isGameOver && gameActive) {
-                blocks.push(new Block(Math.random() > 0.3 ? 'white' : 'black', moveSpeed));
+                let elapsed = (Date.now() - startTime - pausedTimeTotal) / 1000;
+                let rand = Math.random();
+                
+                let newType = 'white';
+                if (elapsed > 20 && rand < 0.2) { 
+                    // 20초가 지났고 20% 확률로 점 하나 하얀 블록 생성
+                    newType = 'whiteDot';
+                } else if (rand > 0.7) { 
+                    // 일반적인 검은 블록 확률
+                    newType = 'black';
+                }
+                
+                blocks.push(new Block(newType, moveSpeed));
             }
             let nextSpawn = Math.max(200, 1000 - (moveSpeed * 100));
             setTimeout(spawnBlock, nextSpawn);
@@ -196,7 +220,8 @@
             }
             for (let i = blocks.length - 1; i >= 0; i--) {
                 blocks[i].update(); blocks[i].draw();
-                if (blocks[i].type === 'white' && blocks[i].y + 50 >= groundY) {
+                // 하얀색 계열 블록이 바닥에 닿으면 게임 오버
+                if ((blocks[i].type === 'white' || blocks[i].type === 'whiteDot') && blocks[i].y + 50 >= groundY) {
                     isGameOver = true; playSfx('fail'); bgm.pause();
                     let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
                     document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
@@ -226,9 +251,11 @@
                         playSfx('white');
                         for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, '#CCCCCC'));
                         blocks.splice(i, 1);
-                    } else {
+                    } else if (b.type === 'black' || b.type === 'whiteDot') {
+                        // 검은 블록 혹은 점 하나 하얀 블록은 광고 실행
                         playSfx('black');
-                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, '#333333'));
+                        const pColor = b.type === 'black' ? '#333333' : '#CCCCCC';
+                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, pColor));
                         blocks.splice(i, 1);
                         isPaused = true; bgm.pause(); pauseStartedAt = Date.now();
                         setTimeout(() => { document.getElementById('ad-modal').style.display = 'block'; }, 100);
@@ -268,9 +295,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
