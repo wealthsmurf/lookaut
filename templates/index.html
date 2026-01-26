@@ -60,6 +60,12 @@
             cursor: pointer; pointer-events: auto;
         }
         .tip-box { font-size: 9px; color: #666; text-align: center; line-height: 1.1; }
+        .bottom-nav {
+            width: 100%; height: 65px; background: var(--card-bg);
+            position: fixed; bottom: 0; display: flex;
+            justify-content: space-around; align-items: center;
+            border-top: 1px solid var(--border-color); font-size: 24px; color: var(--adhd-blue); z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -93,7 +99,7 @@
             <button onclick="location.reload()">다시하기</button>
         </div>
     </div>
-
+    <div class="bottom-nav"> </div>
     <script>
         const bgm = new Audio('Bgggm.mp3'); 
         bgm.loop = true; bgm.volume = 1.00;
@@ -287,7 +293,10 @@
             bgm.muted = isMuted;
             document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
+
+        
     </script>
 </body>
 </html>
+
 
