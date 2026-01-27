@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>블록 방어 - 스무스 & 와이드 판정</title>
+    <title>블록 방어 - 음소거 저장 버전</title>
     <style>
         body { 
             margin: 0; overflow: hidden; background: #f4f4f4; 
@@ -61,10 +61,10 @@
         }
         .tip-box { font-size: 9px; color: #666; text-align: center; line-height: 1.1; }
         .bottom-nav {
-            width: 100%; height: 65px; background: var(--card-bg);
+            width: 100%; height: 65px; background: white;
             position: fixed; bottom: 0; display: flex;
             justify-content: space-around; align-items: center;
-            border-top: 1px solid var(--border-color); font-size: 24px; color: var(--adhd-blue); z-index: 1000;
+            border-top: 1px solid #ddd; font-size: 24px; color: #007bff; z-index: 1000;
         }
     </style>
 </head>
@@ -72,7 +72,7 @@
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
-            <div class="tip-box">💡 광고를 보면 속도가 줄어듭니다!<br>점 하나만 있는 하얀 블록을 조심하세요.</div>
+            <div class="tip-box">💡 점 여러개 하얀 블록만<br>빨간선에 닿으면 패배!</div>
             <div class="right-ui-group">
                 <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
                 <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
@@ -81,11 +81,14 @@
         
         <canvas id="gameCanvas"></canvas>
         <div class="bottom-nav"> 
-            
+            <div>🏠</div>
+            <div>🏆</div>
+            <div>⚙️</div>
         </div>
+
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
             <h2 style="font-size: 20px;">블록 방어</h2>
-            <p style="font-size: 13px;">하얀 점박이 블록을 파괴하세요!<br>광고 블록(+점하나인 블록)은 그냥 보내주셔도 됩니다.</p>
+            <p style="font-size: 13px;">하얀 점박이 블록을 파괴하세요!<br>소리 설정은 자동으로 저장됩니다.</p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
@@ -100,12 +103,23 @@
             <div id="final-time-val" style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">0.0s</div>
             <button onclick="location.reload()">다시하기</button>
         </div>
-        
     </div>
+
     <script>
         const bgm = new Audio('Bgggm.mp3'); 
         bgm.loop = true; bgm.volume = 1.00;
-        let isMuted = false, gameActive = false;
+
+        // --- 음소거 상태 관리 핵심 ---
+        // 'true' 문자열과 비교하여 불리언 값으로 변환
+        let isMuted = localStorage.getItem('gameMuted') === 'true';
+        
+        // 초기 UI 반영
+        function initAudioUI() {
+            bgm.muted = isMuted;
+            document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
+        }
+        initAudioUI();
+        // --------------------------
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(type) {
@@ -135,7 +149,7 @@
         const groundY = canvas.height - 60; 
 
         let blocks = [], particles = []; 
-        let isPaused = false, isGameOver = false;
+        let isPaused = false, isGameOver = false, gameActive = false;
         let moveSpeed = 2.3; 
         let startTime = 0, pausedTimeTotal = 0, pauseStartedAt = 0;
         let bestTime = localStorage.getItem('bestSurvivalTime') || 0;
@@ -219,7 +233,6 @@
                 const b = blocks[i];
                 b.update(); b.draw();
 
-                // 패배 조건: 'white'(점박이 하얀색)만 해당
                 if (b.type === 'white' && b.y + b.height >= groundY) {
                     isGameOver = true; playSfx('fail'); bgm.pause();
                     let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
@@ -242,8 +255,6 @@
             const clientY = (e.touches ? e.touches[0].clientY : e.clientY);
             const mouseX = (clientX - rect.left) * scaleX;
             const mouseY = (clientY - rect.top) * scaleY;
-
-            // 히트박스 보정값 (15px 더 넓게 설정)
             const hitPadding = 15;
 
             for (let i = blocks.length - 1; i >= 0; i--) {
@@ -275,7 +286,10 @@
             document.getElementById('start-overlay').style.display = 'none';
             gameActive = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            bgm.play().catch(() => {});
+            
+            // 저장된 음소거 상태에 따라 음악 재생 결정
+            if (!isMuted) bgm.play().catch(() => {});
+            
             startTime = Date.now();
             spawnBlock();
             update();
@@ -292,15 +306,16 @@
         function toggleMute(e) {
             e.stopPropagation();
             isMuted = !isMuted;
+            
+            // 브라우저 저장소에 음소거 설정 저장
+            localStorage.setItem('gameMuted', isMuted);
+            
             bgm.muted = isMuted;
+            if (isMuted) bgm.pause();
+            else if (gameActive && !isPaused) bgm.play().catch(() => {});
+            
             document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
-
-        
     </script>
 </body>
 </html>
-
-
-
-
