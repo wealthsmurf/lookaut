@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>블록 방어 - 음소거 저장 버전</title>
+    <title>블록 방어 - 완벽 음소거 저장</title>
     <style>
         body { 
             margin: 0; overflow: hidden; background: #f4f4f4; 
@@ -81,14 +81,14 @@
         
         <canvas id="gameCanvas"></canvas>
         <div class="bottom-nav"> 
-            <div></div>
-            <div></div>
-            <div></div>
+            <div>🏠</div>
+            <div>🏆</div>
+            <div>⚙️</div>
         </div>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
             <h2 style="font-size: 20px;">블록 방어</h2>
-            <p style="font-size: 13px;">하얀 점박이 블록을 파괴하세요!<br>소리 설정은 자동으로 저장됩니다.</p>
+            <p style="font-size: 13px;">하얀 점박이 블록을 파괴하세요!<br>소리 설정은 수동으로 켤 때까지 유지됩니다.</p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
@@ -106,28 +106,33 @@
     </div>
 
     <script>
+        // 1. 소리 파일 선언 및 초기 설정
         const bgm = new Audio('Bgggm.mp3'); 
-        bgm.loop = true; bgm.volume = 1.00;
+        bgm.loop = true; 
+        bgm.volume = 1.00;
 
-        // --- 음소거 상태 관리 핵심 ---
-        // 'true' 문자열과 비교하여 불리언 값으로 변환
+        // 2. [핵심] 페이지 로드 시 즉각 음소거 상태 로드
         let isMuted = localStorage.getItem('gameMuted') === 'true';
         
-        // 초기 UI 반영
-        function initAudioUI() {
+        // 페이지 뜨자마자 실행되는 UI 업데이트
+        function syncMuteSettings() {
             bgm.muted = isMuted;
-            document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
+            const btn = document.getElementById('mute-btn');
+            if (btn) btn.innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
-        initAudioUI();
-        // --------------------------
+        syncMuteSettings();
 
+        // 3. 오디오 컨텍스트 (효과음용)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
         function playSfx(type) {
+            // 소리 꺼져있으면 아예 함수 실행 안함
             if (isMuted || !gameActive) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
+            
             if (type === 'white') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
                 gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -234,7 +239,9 @@
                 b.update(); b.draw();
 
                 if (b.type === 'white' && b.y + b.height >= groundY) {
-                    isGameOver = true; playSfx('fail'); bgm.pause();
+                    isGameOver = true; 
+                    playSfx('fail'); 
+                    bgm.pause();
                     let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
                     document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
                     if (finalTime > parseFloat(bestTime)) localStorage.setItem('bestSurvivalTime', finalTime);
@@ -271,7 +278,9 @@
                         const pColor = b.type === 'black' ? '#333333' : '#CCCCCC';
                         for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, pColor));
                         blocks.splice(i, 1);
-                        isPaused = true; bgm.pause(); pauseStartedAt = Date.now();
+                        isPaused = true; 
+                        bgm.pause(); 
+                        pauseStartedAt = Date.now();
                         setTimeout(() => { document.getElementById('ad-modal').style.display = 'block'; }, 100);
                     }
                     break; 
@@ -287,8 +296,11 @@
             gameActive = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
-            // 저장된 음소거 상태에 따라 음악 재생 결정
-            if (!isMuted) bgm.play().catch(() => {});
+            // [중요] 시작 시 현재 음소거 상태를 다시 확인
+            bgm.muted = isMuted;
+            if (!isMuted) {
+                bgm.play().catch(e => console.log("Audio play failed:", e));
+            }
             
             startTime = Date.now();
             spawnBlock();
@@ -299,24 +311,33 @@
             moveSpeed = Math.max(1.5, moveSpeed - 0.25);
             pausedTimeTotal += (Date.now() - pauseStartedAt);
             isPaused = false; 
+            
+            // 광고 닫을 때도 음소거 체크
             if (!isMuted) bgm.play().catch(() => {});
+            
             document.getElementById('ad-modal').style.display = 'none';
         }
 
         function toggleMute(e) {
-            e.stopPropagation();
+            if(e) e.stopPropagation();
             isMuted = !isMuted;
             
-            // 브라우저 저장소에 음소거 설정 저장
+            // 상태 영구 저장
             localStorage.setItem('gameMuted', isMuted);
             
             bgm.muted = isMuted;
-            if (isMuted) bgm.pause();
-            else if (gameActive && !isPaused) bgm.play().catch(() => {});
+            if (isMuted) {
+                bgm.pause();
+            } else {
+                // 게임 중이거나 일시정지가 아닐 때만 재생
+                if (gameActive && !isPaused) bgm.play().catch(() => {});
+            }
             
             document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
+
+        // 실행 시 UI 동기화
+        window.onload = syncMuteSettings;
     </script>
 </body>
 </html>
-
