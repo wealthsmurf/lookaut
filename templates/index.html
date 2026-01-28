@@ -24,7 +24,7 @@
         canvas { 
             background: #ffffff; border: 3px solid #333; 
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            width: 85vw; 
+            width: 80vw; 
             max-width: 360px;
             height: auto; 
             max-height: 70vh;
@@ -96,8 +96,13 @@
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
             <h2 style="margin-top:0;">🛡️ 블록 방어</h2>
             <p style="font-size: 13px; color: #444; line-height: 1.5;">
-                <b>점박이 하얀 블록</b>이 선에 닿으면 패배!<br>
-                <b>검은 광고 블록</b>을 누르면 속도가 느려집니다.
+                1. <b>하얀 점박이</b> 블록을 클릭해 파괴하세요!<br>
+
+                2. 점 하나 블록은 점박이가 아닙니다!<br>
+
+                3. <b>검은 광고 블록</b>은 난이도를 낮춰줍니다.<br>
+
+                4. 하얀 점박이가 바닥 선에 닿으면 패배!
             </p>
             <button onclick="startGame()">게임 시작</button>
         </div>
@@ -357,3 +362,4 @@
     </script>
 </body>
 </html>
+
