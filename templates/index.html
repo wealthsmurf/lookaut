@@ -24,47 +24,48 @@
         canvas { 
             background: #ffffff; border: 3px solid #333; 
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            width: 80vw; 
+            width: 90vw; 
             max-width: 360px;
             height: auto; 
-            max-height: 75vh;
+            max-height: 70vh;
         }
         .panel {
             display: none; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%); background: white; 
             padding: 20px; border-radius: 15px; border: 3px solid #333; 
             text-align: center; z-index: 100; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-            width: 75%; max-width: 280px;
+            width: 80%; max-width: 280px;
         }
         button { 
-            padding: 10px 20px; background: #333; 
+            padding: 12px 24px; background: #333; 
             color: white; border: none; border-radius: 8px; 
-            cursor: pointer; font-weight: bold; font-size: 14px;
+            cursor: pointer; font-weight: bold; font-size: 16px;
+            margin-top: 10px;
         }
         #ui-panel {
-            position: absolute; top: 15px; 
-            width: 80vw; 
+            position: absolute; top: 10px; 
+            width: 90vw; 
             max-width: 360px;
             display: flex; justify-content: space-between; align-items: center;
             pointer-events: none; z-index: 10;
         }
         .info-box {
-            background: rgba(255, 255, 255, 0.9); padding: 4px 8px; 
-            border-radius: 6px; border: 2px solid #333; font-weight: bold; font-size: 11px;
+            background: rgba(255, 255, 255, 0.9); padding: 5px 10px; 
+            border-radius: 6px; border: 2px solid #333; font-weight: bold; font-size: 12px;
             pointer-events: auto;
         }
-        .right-ui-group { display: flex; align-items: center; gap: 4px; }
+        .right-ui-group { display: flex; align-items: center; gap: 5px; }
         #mute-btn {
             background: #444; color: white; border: 2px solid #333;
-            padding: 4px 6px; border-radius: 6px; font-size: 9px;
+            padding: 5px 8px; border-radius: 6px; font-size: 11px;
             cursor: pointer; pointer-events: auto;
         }
-        .tip-box { font-size: 9px; color: #666; text-align: center; line-height: 1.1; }
+        .tip-box { font-size: 10px; color: #666; text-align: center; line-height: 1.2; font-weight: bold; }
         .bottom-nav {
-            width: 100%; height: 65px; background: white;
+            width: 100%; height: 60px; background: white;
             position: fixed; bottom: 0; display: flex;
-            justify-content: space-around; align-items: center;
-            border-top: 1px solid #ddd; font-size: 24px; color: #007bff; z-index: 1000;
+            justify-content: center; align-items: center;
+            border-top: 1px solid #ddd; z-index: 1000;
         }
     </style>
 </head>
@@ -72,7 +73,7 @@
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
-            <div class="tip-box">💡 점 여러개 하얀 블록만<br>빨간선에 닿으면 패배!</div>
+            <div class="tip-box">💡 점박이 파괴!<br>점 하나는 조심!</div>
             <div class="right-ui-group">
                 <div id="best-display" class="info-box" style="color: #007bff;">Best: 0.0s</div>
                 <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
@@ -80,61 +81,62 @@
         </div>
         
         <canvas id="gameCanvas"></canvas>
-        <div class="bottom-nav"> 
 
+        <div class="bottom-nav"> 
             <ins class="kakao_ad_area" style="display:none;"
-data-ad-unit = "DAN-8OJpo4T0Kc2rPuXZ"
-data-ad-width = "320"
-data-ad-height = "50"></ins>
-<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+                data-ad-unit = "DAN-8OJpo4T0Kc2rPuXZ"
+                data-ad-width = "320"
+                data-ad-height = "50"></ins>
+            <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
         </div>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
-            <h2 style="font-size: 20px;">블록 방어</h2>
-            <p style="font-size: 13px;">하얀 점박이 블록을 파괴하세요(단 점 하나만 박힌건 조심하세요)!<br>검은블록을 누르면 난이도가 쉬워집니다.</p>
+            <h2 style="margin-top:0;">블록 방어</h2>
+            <p style="font-size: 14px; color: #444;">
+                1. <b>하얀 점박이</b> 블록을 클릭해 파괴하세요!<br>
+                2. 점 하나 블록은 점박이가 아닙니다!<br>
+                3. <b>검은 광고 블록</b>은 속도를 늦춰줍니다.<br>
+                4. 하얀 점박이가 바닥 선에 닿으면 패배!
+            </p>
             <button onclick="startGame()">게임 시작</button>
         </div>
         
         <div id="ad-modal" class="panel">
-            <h3 style="margin-top: 0; font-size: 18px;">광고</h3>
-            <div id="ad-content" style="font-size: 14px; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #eee; margin-bottom: 10px; border-radius: 5px;"><ins class="kakao_ad_area" style="display:none;"
-data-ad-unit = "DAN-tTvpwiRyg3nxCPs1"
-data-ad-width = "320"
-data-ad-height = "50"></ins>
-<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script></div>
-            
-            <button onclick="closeAd()">닫기</button>
+            <h3 style="margin-top: 0;">보너스 광고</h3>
+            <p style="font-size: 13px;">광고를 확인하면 난이도가 낮아집니다.</p>
+            <div id="ad-content" style="min-height: 60px; background: #eee; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                <ins class="kakao_ad_area" style="display:none;"
+                    data-ad-unit = "DAN-tTvpwiRyg3nxCPs1"
+                    data-ad-width = "320"
+                    data-ad-height = "50"></ins>
+                <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+            </div>
+            <button onclick="closeAd()">닫기 및 계속하기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
-            <h2 style="font-size: 20px;">GAME OVER</h2>
-            <div id="final-time-val" style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">0.0s</div>
+            <h2>GAME OVER</h2>
+            <div id="final-time-val" style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">0.0s</div>
             <button onclick="location.reload()">다시하기</button>
         </div>
     </div>
 
     <script>
-        // 1. 소리 파일 선언 및 초기 설정
+        // --- 1. 오디오 설정 ---
         const bgm = new Audio('Bgggm.mp3'); 
         bgm.loop = true; 
-        bgm.volume = 1.00;
+        bgm.volume = 0.5;
 
-        // 2. [핵심] 페이지 로드 시 즉각 음소거 상태 로드
         let isMuted = localStorage.getItem('gameMuted') === 'true';
-        
-        // 페이지 뜨자마자 실행되는 UI 업데이트
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
         function syncMuteSettings() {
             bgm.muted = isMuted;
             const btn = document.getElementById('mute-btn');
             if (btn) btn.innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
-        syncMuteSettings();
-
-        // 3. 오디오 컨텍스트 (효과음용)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSfx(type) {
-            // 소리 꺼져있으면 아예 함수 실행 안함
             if (isMuted || !gameActive) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -156,6 +158,7 @@ data-ad-height = "50"></ins>
             }
         }
 
+        // --- 2. 게임 변수 설정 ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 400; canvas.height = 650;
@@ -166,8 +169,10 @@ data-ad-height = "50"></ins>
         let moveSpeed = 2.3; 
         let startTime = 0, pausedTimeTotal = 0, pauseStartedAt = 0;
         let bestTime = localStorage.getItem('bestSurvivalTime') || 0;
+
         document.getElementById('best-display').innerText = `Best: ${parseFloat(bestTime).toFixed(1)}s`;
 
+        // --- 3. 클래스 정의 ---
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y; this.color = color;
@@ -188,20 +193,25 @@ data-ad-height = "50"></ins>
             }
             draw() {
                 ctx.save();
+                // 배경색
                 ctx.fillStyle = (this.type === 'white' || this.type === 'whiteDot') ? '#FFFFFF' : '#000000';
                 ctx.fillRect(this.x, this.y, this.width, this.height);
                 ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(this.x, this.y, this.width, this.height);
+                
+                // 점박이/텍스트 색상
                 ctx.fillStyle = (this.type === 'white' || this.type === 'whiteDot') ? '#333' : '#FFFFFF';
                 
                 if (this.type === 'whiteDot') {
-                    ctx.beginPath(); ctx.arc(this.x + 30, this.y + 25, 4, 0, Math.PI*2); ctx.fill();
-                } else {
+                    // 점 하나 (조심해야 할 블록)
+                    ctx.beginPath(); ctx.arc(this.x + 30, this.y + 25, 5, 0, Math.PI*2); ctx.fill();
+                } else if (this.type === 'white') {
+                    // 점 여러개 (파괴 대상)
                     [[15, 15], [45, 20], [20, 35], [40, 40]].forEach(p => { 
                         ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 3, 0, Math.PI*2); ctx.fill(); 
                     });
-                }
-                if(this.type === 'black') {
-                    ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+                } else if (this.type === 'black') {
+                    // 광고 블록
+                    ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
                     ctx.fillText("광고", this.x + 30, this.y + 32);
                 }
                 ctx.restore();
@@ -209,21 +219,24 @@ data-ad-height = "50"></ins>
             update() { if (!isPaused && !isGameOver && gameActive) this.y += this.speed; }
         }
 
+        // --- 4. 게임 로직 ---
         function spawnBlock() {
             if (!isPaused && !isGameOver && gameActive) {
                 let elapsed = (Date.now() - startTime - pausedTimeTotal) / 1000;
                 let rand = Math.random();
                 let newType = 'white';
-                if (elapsed > 20 && rand < 0.2) newType = 'whiteDot';
-                else if (rand > 0.75) newType = 'black';
+                
+                // 확률 설정
+                if (elapsed > 15 && rand < 0.15) newType = 'whiteDot'; // 15초 이후 점 하나 블록 등장
+                else if (rand > 0.8) newType = 'black'; // 광고 블록 확률
                 
                 blocks.push(new Block(newType, moveSpeed));
             }
-            let nextSpawn = Math.max(140, 650 - (moveSpeed * 90)); 
+            let nextSpawn = Math.max(200, 700 - (moveSpeed * 100)); 
             setTimeout(spawnBlock, nextSpawn);
         }
 
-        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.11; }, 1000);
+        setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.1; }, 1000);
 
         function update() {
             if (isGameOver || !gameActive) return;
@@ -234,28 +247,28 @@ data-ad-height = "50"></ins>
                 document.getElementById('time-display').innerText = `${elapsed.toFixed(1)}s`;
             }
 
+            // 빨간 바닥 선
             ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY);
             ctx.strokeStyle = '#ff4d4d'; ctx.lineWidth = 4; ctx.stroke();
             
+            // 파티클 업데이트
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update(); particles[i].draw();
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
 
+            // 블록 업데이트 및 충돌 감지
             for (let i = blocks.length - 1; i >= 0; i--) {
                 const b = blocks[i];
                 b.update(); b.draw();
 
+                // 하얀 점박이 블록이 선에 닿으면 게임 오버
                 if (b.type === 'white' && b.y + b.height >= groundY) {
-                    isGameOver = true; 
-                    playSfx('fail'); 
-                    bgm.pause();
-                    let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
-                    document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
-                    if (finalTime > parseFloat(bestTime)) localStorage.setItem('bestSurvivalTime', finalTime);
-                    document.getElementById('game-over-panel').style.display = 'block';
+                    endGame();
                     return;
                 }
+                
+                // 화면 밖으로 나가면 삭제
                 if (b.y > canvas.height) blocks.splice(i, 1);
             }
             requestAnimationFrame(update);
@@ -270,7 +283,7 @@ data-ad-height = "50"></ins>
             const clientY = (e.touches ? e.touches[0].clientY : e.clientY);
             const mouseX = (clientX - rect.left) * scaleX;
             const mouseY = (clientY - rect.top) * scaleY;
-            const hitPadding = 15;
+            const hitPadding = 20;
 
             for (let i = blocks.length - 1; i >= 0; i--) {
                 const b = blocks[i];
@@ -278,79 +291,74 @@ data-ad-height = "50"></ins>
                     mouseY >= b.y - hitPadding && mouseY <= b.y + b.height + hitPadding) {
                     
                     if (b.type === 'white') {
+                        // 파괴 대상 블록
                         playSfx('white');
-                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, '#CCCCCC'));
+                        for (let j = 0; j < 12; j++) particles.push(new Particle(b.x+30, b.y+25, '#CCCCCC'));
                         blocks.splice(i, 1);
-                    } else {
+                    } else if (b.type === 'black') {
+                        // 광고 블록 (난이도 하락)
                         playSfx('black');
-                        const pColor = b.type === 'black' ? '#333333' : '#CCCCCC';
-                        for (let j = 0; j < 15; j++) particles.push(new Particle(b.x+30, b.y+25, pColor));
                         blocks.splice(i, 1);
                         isPaused = true; 
                         bgm.pause(); 
                         pauseStartedAt = Date.now();
-                        setTimeout(() => { document.getElementById('ad-modal').style.display = 'block'; }, 100);
+                        document.getElementById('ad-modal').style.display = 'block';
+                    } else if (b.type === 'whiteDot') {
+                        // 점 하나 블록 (클릭 시 효과만 발생, 파괴는 가능하게 설정)
+                        playSfx('white');
+                        for (let j = 0; j < 5; j++) particles.push(new Particle(b.x+30, b.y+25, '#ffcc00'));
+                        blocks.splice(i, 1);
                     }
                     break; 
                 }
             }
         }
 
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
-        canvas.addEventListener('mousedown', handleInput);
-
+        // --- 5. 제어 함수 ---
         function startGame() {
             document.getElementById('start-overlay').style.display = 'none';
             gameActive = true;
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
-            // [중요] 시작 시 현재 음소거 상태를 다시 확인
             bgm.muted = isMuted;
-            if (!isMuted) {
-                bgm.play().catch(e => console.log("Audio play failed:", e));
-            }
+            if (!isMuted) bgm.play().catch(e => console.log("Audio play failed:", e));
             
             startTime = Date.now();
             spawnBlock();
             update();
         }
 
+        function endGame() {
+            isGameOver = true; 
+            playSfx('fail'); 
+            bgm.pause();
+            let finalTime = (Date.now() - startTime - pausedTimeTotal) / 1000;
+            document.getElementById('final-time-val').innerText = `${finalTime.toFixed(1)}s`;
+            if (finalTime > parseFloat(bestTime)) localStorage.setItem('bestSurvivalTime', finalTime);
+            document.getElementById('game-over-panel').style.display = 'block';
+        }
+
         function closeAd() {
-            moveSpeed = Math.max(1.5, moveSpeed - 0.25);
+            moveSpeed = Math.max(2.0, moveSpeed - 0.4); // 속도 감소 보상
             pausedTimeTotal += (Date.now() - pauseStartedAt);
             isPaused = false; 
-            
-            // 광고 닫을 때도 음소거 체크
             if (!isMuted) bgm.play().catch(() => {});
-            
             document.getElementById('ad-modal').style.display = 'none';
         }
 
         function toggleMute(e) {
             if(e) e.stopPropagation();
             isMuted = !isMuted;
-            
-            // 상태 영구 저장
             localStorage.setItem('gameMuted', isMuted);
-            
             bgm.muted = isMuted;
-            if (isMuted) {
-                bgm.pause();
-            } else {
-                // 게임 중이거나 일시정지가 아닐 때만 재생
-                if (gameActive && !isPaused) bgm.play().catch(() => {});
-            }
-            
+            if (isMuted) bgm.pause();
+            else if (gameActive && !isPaused) bgm.play().catch(() => {});
             document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
         }
 
-        // 실행 시 UI 동기화
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
+        canvas.addEventListener('mousedown', handleInput);
         window.onload = syncMuteSettings;
     </script>
 </body>
 </html>
-
-
-
-
-
