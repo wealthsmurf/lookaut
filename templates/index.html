@@ -3,176 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="site-title">블록 방어 - 온라인 반응속도 테스트 게임</title>
+    <title id="site-title">블록 디펜스 - 무료 온라인 반응속도 및 집중력 테스트</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" crossorigin="anonymous"></script>
 
     <style>
-        :root { --main-bg: #f4f4f4; --primary: #333; --accent: #007bff; --danger: #ff4d4d; }
-        body { 
-            margin: 0; background: var(--main-bg); font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; 
-            color: #333; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
+        :root { --main-bg: #fdfdfd; --primary: #333; --accent: #007bff; --danger: #ff4d4d; }
+        body { margin: 0; background: var(--main-bg); font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #333; overflow-x: hidden; }
         
-        /* 헤더 & 언어설정 */
-        header { background: #fff; border-bottom: 1px solid #ddd; padding: 15px 0; text-align: center; width: 100%; position: relative; }
-        #lang-toggle { position: absolute; top: 15px; right: 15px; padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff; cursor: pointer; font-size: 12px; font-weight: bold; }
+        header { background: #fff; border-bottom: 1px solid #eee; padding: 20px 0; text-align: center; width: 100%; position: relative; }
+        header h1 { margin: 0; font-size: 22px; color: var(--primary); letter-spacing: -1px; }
+        
+        /* 언어 전환 버튼 스타일 */
+        #lang-toggle { position: absolute; top: 20px; right: 20px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background: #fff; cursor: pointer; font-size: 12px; font-weight: bold; }
+        #lang-toggle:hover { background: #f5f5f5; }
 
-        #game-container { position: relative; padding: 20px 0; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        nav { margin-top: 10px; font-size: 13px; color: #777; }
+        #main-container { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
 
-        /* 게임 영역 */
-        #game-wrapper { position: relative; margin-bottom: 20px; touch-action: manipulation; }
+        #game-wrapper { position: relative; margin: 10px 0; }
         canvas { 
             background: #ffffff; border: 4px solid var(--primary); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            width: 85vw; max-width: 360px; height: auto; display: block; border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 80vw; max-width: 400px; height: auto; display: block; border-radius: 10px;
         }
 
-        /* UI */
-        #ui-panel {
-            position: absolute; top: 10px; width: 90%; left: 5%;
-            display: flex; justify-content: space-between; align-items: center;
-            pointer-events: none; z-index: 10;
-        }
-        .info-box { background: rgba(255,255,255,0.9); padding: 5px 10px; border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; font-size: 13px; pointer-events: auto; }
-        #mute-btn { background: var(--primary); color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
+        #ui-panel { position: absolute; top: 15px; width: 80vw; max-width: 400px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 10; }
+        .info-box { background: rgba(255,255,255,0.9); padding: 5px 12px; border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; font-size: 13px; pointer-events: auto; }
+        
+        .ad-placeholder { width: 80vw; max-width: 320px; height: 100px; background: #f0f0f0; margin: 15px 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #aaa; border: 1px dashed #ccc; }
 
-        /* 패널 공통 */
-        .panel { 
-            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: white; padding: 25px; border-radius: 20px; border: 3px solid var(--primary); 
-            z-index: 100; text-align: center; width: 80%; max-width: 280px; box-shadow: 0 0 50px rgba(0,0,0,0.3); 
-        }
-        button.main-btn { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .content-section { width: 85vw; max-width: 700px; background: #fff; padding: 30px; margin-top: 30px; border-radius: 15px; line-height: 1.8; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .content-section h2 { border-left: 5px solid var(--accent); padding-left: 12px; font-size: 20px; margin-bottom: 20px; }
+        .content-section h3 { font-size: 17px; margin-top: 25px; color: var(--accent); }
 
-        /* 하단 광고 영역 */
-        .bottom-ad { width: 100%; max-width: 360px; height: 60px; background: #eee; margin: 10px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .panel { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; border: 3px solid var(--primary); z-index: 100; text-align: center; width: 70%; max-width: 280px; box-shadow: 0 0 50px rgba(0,0,0,0.2); }
+        button { padding: 12px 25px; background: var(--primary); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        button:hover { background: var(--accent); transform: translateY(-2px); }
 
-        /* SEO 콘텐츠 섹션 */
-        .content-section { width: 90%; max-width: 600px; background: #fff; padding: 25px; margin: 20px 0 80px 0; border-radius: 15px; line-height: 1.7; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .content-section h2 { border-left: 5px solid var(--accent); padding-left: 10px; font-size: 18px; margin-bottom: 15px; }
-
-        footer { padding: 20px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #ddd; width: 100%; background: #fff; }
+        footer { margin-top: 60px; padding: 40px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #eee; width: 100%; }
+        footer a { color: #999; text-decoration: none; margin: 0 8px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 id="txt-header-title" style="margin:0; font-size: 20px;">🛡️ BLOCK DEFENSE</h1>
+    <h1 id="txt-header-title">🛡️ BLOCK DEFENSE</h1>
     <button id="lang-toggle" onclick="toggleLang()">KO / EN</button>
+    <nav id="txt-nav">무료 반응속도 테스트 | 온라인 웹게임</nav>
 </header>
 
-<div id="game-container">
+<div id="main-container">
+    <div class="ad-placeholder">AD - TOP BANNER</div>
+
     <div id="game-wrapper">
         <div id="ui-panel">
             <div id="time-display" class="info-box">0.0s</div>
             <div id="best-display" class="info-box" style="color: var(--accent);">Best: 0.0s</div>
-            <button id="mute-btn" onclick="toggleMute(event)">🎵 On</button>
         </div>
         
         <canvas id="gameCanvas"></canvas>
 
         <div id="start-overlay" class="panel" style="display: flex; flex-direction: column;">
-            <h2 id="txt-start-title">게임 시작</h2>
-            <p id="txt-start-desc" style="font-size: 13px; text-align: left; color: #555;">
-                1. 하얀 점박이 블록을 클릭해 파괴하세요!<br>
-                2. 검은 광고 블록은 속도를 낮춰줍니다.<br>
-                3. 하얀 블록이 바닥에 닿으면 종료됩니다.
+            <h2 id="txt-start-title" style="margin: 0 0 15px 0;">🛡️ 게임 시작</h2>
+            <p id="txt-start-desc" style="font-size: 13px; color: #666; text-align: left;">
+                1. <b>흰색 점박이</b> 블록을 클릭해 제거하세요.<br>
+                2. <b>빨간 선</b>에 닿으면 게임이 종료됩니다.<br>
+                3. <b>검은 SLOW</b> 블록을 깨면 속도가 줄어듭니다.
             </p>
-            <button class="main-btn" id="txt-start-btn" onclick="startGame()">START</button>
+            <button id="txt-start-btn" onclick="startGame()">방어 시작</button>
         </div>
 
         <div id="ad-modal" class="panel">
-            <h3 id="txt-pause-title">잠시 휴식</h3>
-            <div id="kakao-ad-container" style="background:#f9f9f9; min-height:60px; margin-bottom:15px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                </div>
-            <button class="main-btn" id="txt-pause-btn" onclick="closeAd()">계속하기</button>
+            <h3 id="txt-pause-title">잠시 휴식!</h3>
+            <div style="background:#f9f9f9; margin-bottom:15px; min-height:100px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <p id="txt-pause-desc" style="font-size:11px; color:#999;">광고 로드 대기 중...</p>
+            </div>
+            <button id="txt-pause-btn" onclick="closeAd()">계속하기</button>
         </div>
 
         <div id="game-over-panel" class="panel">
             <h2 id="txt-gameover-title" style="color: var(--danger);">GAME OVER</h2>
-            <div id="final-time-val" style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">0.0s</div>
-            <button class="main-btn" id="txt-restart-btn" onclick="location.reload()">RETRY</button>
+            <div id="final-time-val" style="font-size: 32px; font-weight: bold; margin-bottom: 20px;">0.0s</div>
+            <button id="txt-restart-btn" onclick="location.reload()">다시 도전</button>
         </div>
     </div>
 
-    <div class="bottom-ad">
-        <ins class="kakao_ad_area" style="display:none;"
-            data-ad-unit = "DAN-8OJpo4T0Kc2rPuXZ"
-            data-ad-width = "320"
-            data-ad-height = "50"></ins>
-        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
-    </div>
-
-    <section class="content-section">
-        <h2 id="txt-content-h2">블록 방어: 반응속도 테스트 및 훈련</h2>
-        <p id="txt-content-p1"><b>블록 방어(Block Defense)</b>는 사용자의 동적 시력과 클릭 정확도를 측정하기 위해 설계된 웹 기반 아케이드 게임입니다. 단순하지만 중독성 있는 메커니즘을 통해 집중력을 향상시킬 수 있습니다.</p>
+    <section class="content-section" id="translatable-content">
+        <h2 id="txt-content-h2">블록 디펜스: 웹 기반 반응속도 훈련</h2>
+        <p id="txt-content-p1"><b>블록 디펜스(Block Defense)</b>는 별도의 설치 없이 브라우저에서 즉시 즐길 수 있는 HTML5 기반 아케이드 게임입니다. 사용자의 동적 시력과 클릭 정확도를 테스트하며, 심리적 집중력을 높이는 데 도움을 줍니다.</p>
         
-        <h3 id="txt-content-h3" style="font-size:16px;">게임 전략 및 특징</h3>
-        <p id="txt-content-p2">플레이어는 위에서 떨어지는 다양한 블록 중 위험 요소(흰색 블록)를 식별하여 빠르게 제거해야 합니다. 특히 검은색 광고 블록은 게임의 페이스를 조절하는 중요한 전략적 요소입니다.</p>
+        <h3 id="txt-content-h3-1">주요 게임 메커니즘</h3>
+        <p id="txt-content-p2">게임이 시작되면 상단에서 다양한 블록이 중력 가속도에 의해 하강합니다. 플레이어는 하단의 <b>데드라인(Red Line)</b>을 보호해야 합니다. 흰색 배경에 검은색 점이 박힌 기본 블록은 클릭 시 파괴되며 점수를 획득합니다.</p>
+        
+        <h3 id="txt-content-h3-2">전략적 요소: 슬로우 모션 시스템</h3>
+        <p id="txt-content-p3">게임 중 무작위로 등장하는 <b>검은색 보너스 블록</b>은 난이도를 조절하는 핵심 요소입니다. 이 블록을 파괴하면 일시적인 슬로우 모션 효과가 발생하며, 점진적으로 빨라지는 블록의 속도를 늦춰 장기적인 생존을 가능하게 합니다.</p>
     </section>
+
+    <div class="ad-placeholder">AD - BOTTOM BANNER</div>
 </div>
 
 <footer>
-    <p>© 2026 Block Defense Online. All rights reserved.</p>
-    <div style="margin-top:10px;">
-        <a href="#" style="color:#999; text-decoration:none;">Privacy Policy</a> | 
-        <a href="#" style="color:#999; text-decoration:none;">Terms of Service</a>
+    <div style="margin-bottom:15px;">
+        <a href="#" id="txt-footer-p1">개인정보처리방침</a> | <a href="#" id="txt-footer-p2">이용약관</a>
     </div>
+    <p>© 2026 Block Defense Team. All rights reserved.</p>
 </footer>
 
 <script>
-    // --- 언어 데이터 ---
+    // --- 1. 다국어 데이터 설정 ---
+    let currentLang = localStorage.getItem('gameLang') || 'ko';
+
     const i18n = {
         ko: {
-            title: "블록 방어 - 온라인 반응속도 테스트 게임",
+            title: "블록 디펜스 - 무료 온라인 반응속도 및 집중력 테스트",
             headerTitle: "🛡️ BLOCK DEFENSE",
-            startTitle: "게임 시작",
-            startDesc: "1. 하얀 점박이 블록을 클릭해 파괴하세요!<br>2. 검은 광고 블록은 속도를 낮춰줍니다.<br>3. 하얀 블록이 바닥에 닿으면 종료됩니다.",
+            nav: "무료 반응속도 테스트 | 온라인 웹게임",
+            startTitle: "🛡️ 게임 시작",
+            startDesc: "1. <b>흰색 점박이</b> 블록을 클릭해 제거하세요.<br>2. <b>빨간 선</b>에 닿으면 게임이 종료됩니다.<br>3. <b>검은 SLOW</b> 블록을 깨면 속도가 줄어듭니다.",
             startBtn: "방어 시작",
             pauseTitle: "잠시 휴식!",
-            pauseBtn: "광고 닫고 계속하기",
+            pauseDesc: "광고 로드 대기 중...",
+            pauseBtn: "계속하기",
             gameoverTitle: "게임 종료",
             restartBtn: "다시 도전",
-            contentH2: "블록 방어: 반응속도 테스트 및 훈련",
-            contentP1: "<b>블록 방어(Block Defense)</b>는 사용자의 동적 시력과 클릭 정확도를 측정하기 위해 설계된 웹 기반 아케이드 게임입니다.",
-            contentH3: "게임 전략 및 특징",
-            contentP2: "위험 요소(흰색 블록)를 식별하여 빠르게 제거해야 합니다. 검은색 블록은 속도를 늦추는 전략적 아이템입니다."
+            contentH2: "블록 디펜스: 웹 기반 반응속도 훈련",
+            contentP1: "<b>블록 디펜스(Block Defense)</b>는 별도의 설치 없이 브라우저에서 즉시 즐길 수 있는 HTML5 기반 아케이드 게임입니다.",
+            contentH3_1: "주요 게임 메커니즘",
+            contentP2: "게임이 시작되면 상단에서 다양한 블록이 하강합니다. 플레이어는 하단의 빨간 선을 보호해야 합니다.",
+            contentH3_2: "전략적 요소: 슬로우 모션",
+            contentP3: "검은색 블록은 속도를 늦추는 핵심 아이템입니다. 이를 파괴해 고득점을 노리세요.",
+            footerP1: "개인정보처리방침", footerP2: "이용약관"
         },
         en: {
-            title: "Block Defense - Online Reaction Test",
+            title: "Block Defense - Free Online Reaction Test",
             headerTitle: "🛡️ BLOCK DEFENSE",
-            startTitle: "START GAME",
-            startDesc: "1. Click white dotted blocks to destroy.<br>2. Black ad blocks will slow down the speed.<br>3. Game over if white blocks touch the bottom.",
+            nav: "Free Reaction Test | Online Web Game",
+            startTitle: "🛡️ START GAME",
+            startDesc: "1. Click <b>White Dotted</b> blocks to destroy.<br>2. Protect the <b>Red Line</b> at the bottom.<br>3. Destroy <b>Black SLOW</b> blocks to slow down.",
             startBtn: "Start Defense",
             pauseTitle: "PAUSED",
-            pauseBtn: "Close Ad & Continue",
+            pauseDesc: "Loading content...",
+            pauseBtn: "Continue",
             gameoverTitle: "GAME OVER",
             restartBtn: "Try Again",
             contentH2: "Block Defense: Reaction Training",
-            contentP1: "<b>Block Defense</b> is a web arcade game designed to measure dynamic visual acuity and click accuracy.",
-            contentH3: "Strategy & Features",
-            contentP2: "Identify and remove threats (white blocks) quickly. Black blocks are strategic items that slow down falling speed."
+            contentP1: "<b>Block Defense</b> is an HTML5-based arcade game you can play instantly in your browser without installation.",
+            contentH3_1: "Game Mechanics",
+            contentP2: "Blocks fall from the top. You must protect the red deadline at the bottom of the screen.",
+            contentH3_2: "Strategy: Slow Motion",
+            contentP3: "Black blocks are key items. Destroy them to slow down the falling speed for survival.",
+            footerP1: "Privacy Policy", footerP2: "Terms"
         }
     };
-
-    let currentLang = localStorage.getItem('gameLang') || 'ko';
 
     function updateLanguage() {
         const lang = i18n[currentLang];
         document.getElementById('site-title').innerText = lang.title;
         document.getElementById('txt-header-title').innerText = lang.headerTitle;
+        document.getElementById('txt-nav').innerText = lang.nav;
         document.getElementById('txt-start-title').innerText = lang.startTitle;
         document.getElementById('txt-start-desc').innerHTML = lang.startDesc;
         document.getElementById('txt-start-btn').innerText = lang.startBtn;
         document.getElementById('txt-pause-title').innerText = lang.pauseTitle;
+        document.getElementById('txt-pause-desc').innerText = lang.pauseDesc;
         document.getElementById('txt-pause-btn').innerText = lang.pauseBtn;
         document.getElementById('txt-gameover-title').innerText = lang.gameoverTitle;
         document.getElementById('txt-restart-btn').innerText = lang.restartBtn;
         document.getElementById('txt-content-h2').innerText = lang.contentH2;
         document.getElementById('txt-content-p1').innerHTML = lang.contentP1;
-        document.getElementById('txt-content-h3').innerText = lang.contentH3;
+        document.getElementById('txt-content-h3-1').innerText = lang.contentH3_1;
         document.getElementById('txt-content-p2').innerText = lang.contentP2;
+        document.getElementById('txt-content-h3-2').innerText = lang.contentH3_2;
+        document.getElementById('txt-content-p3').innerText = lang.contentP3;
+        document.getElementById('txt-footer-p1').innerText = lang.footerP1;
+        document.getElementById('txt-footer-p2').innerText = lang.footerP2;
     }
 
     function toggleLang() {
@@ -181,9 +186,12 @@
         updateLanguage();
     }
 
-    // --- 게임 로직 ---
+    // 페이지 로드 시 언어 적용
+    updateLanguage();
+
+    // --- 2. 기존 게임 로직 (사운드 포함) ---
     const bgm = new Audio('Bgggm.mp3'); 
-    bgm.loop = true;
+    bgm.loop = true; bgm.volume = 0.5;
     let isMuted = localStorage.getItem('gameMuted') === 'true';
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -225,7 +233,7 @@
             ctx.fillStyle = (this.type === 'white' || this.type === 'whiteDot') ? '#333' : '#FFFFFF';
             if (this.type === 'whiteDot') { ctx.beginPath(); ctx.arc(this.x + 30, this.y + 25, 4, 0, Math.PI*2); ctx.fill(); }
             else { [[15, 15], [45, 20], [20, 35], [40, 40]].forEach(p => { ctx.beginPath(); ctx.arc(this.x+p[0], this.y+p[1], 3, 0, Math.PI*2); ctx.fill(); }); }
-            if(this.type === 'black') { ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(currentLang === 'ko' ? "광고" : "AD", this.x + 30, this.y + 32); }
+            if(this.type === 'black') { ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText("SLOW", this.x + 30, this.y + 32); }
             ctx.restore();
         }
         update() { if (!isPaused && !isGameOver && gameActive) this.y += this.speed; }
@@ -235,15 +243,13 @@
         if (!isPaused && !isGameOver && gameActive) {
             let elapsed = (Date.now() - startTime - pausedTimeTotal) / 1000;
             let rand = Math.random();
-            let newType = 'white';
-            if (elapsed > 20 && rand < 0.2) newType = 'whiteDot';
-            else if (rand > 0.82) newType = 'black';
+            let newType = (elapsed > 20 && rand < 0.15) ? 'whiteDot' : (rand > 0.85 ? 'black' : 'white');
             blocks.push(new Block(newType, moveSpeed));
         }
-        setTimeout(spawnBlock, Math.max(160, 680 - (moveSpeed * 95)));
+        setTimeout(spawnBlock, Math.max(180, 700 - (moveSpeed * 105)));
     }
 
-    setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.1; }, 1000);
+    setInterval(() => { if (!isPaused && !isGameOver && gameActive) moveSpeed += 0.08; }, 1000);
 
     function update() {
         if (isGameOver || !gameActive) return;
@@ -253,7 +259,7 @@
             document.getElementById('time-display').innerText = `${elapsed.toFixed(1)}s`;
         }
         ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); 
-        ctx.strokeStyle = '#ff4d4d'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.strokeStyle = '#ff4d4d'; ctx.lineWidth = 5; ctx.stroke();
         particles.forEach((p, i) => { p.update(); p.draw(); if(p.life <= 0) particles.splice(i, 1); });
         for (let i = blocks.length - 1; i >= 0; i--) {
             const b = blocks[i]; b.update(); b.draw();
@@ -280,19 +286,17 @@
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const mouseX = (clientX - rect.left) * scaleX;
         const mouseY = (clientY - rect.top) * scaleY;
-        const hitPadding = 20;
 
         for (let i = blocks.length - 1; i >= 0; i--) {
             const b = blocks[i];
-            if (mouseX >= b.x - hitPadding && mouseX <= b.x + b.width + hitPadding && mouseY >= b.y - hitPadding && mouseY <= b.y + b.height + hitPadding) {
+            if (mouseX >= b.x - 15 && mouseX <= b.x + b.width + 15 && mouseY >= b.y - 15 && mouseY <= b.y + b.height + 15) {
                 if (b.type === 'white') {
                     playSfx('white');
-                    for (let j = 0; j < 12; j++) particles.push(new Particle(b.x+30, b.y+25, '#CCCCCC'));
+                    for (let j = 0; j < 12; j++) particles.push(new Particle(b.x+30, b.y+25, '#ddd'));
                     blocks.splice(i, 1);
-                } else {
+                } else if (b.type === 'black') {
                     showAd();
-                    const pColor = b.type === 'black' ? '#333333' : '#CCCCCC';
-                    for (let j = 0; j < 12; j++) particles.push(new Particle(b.x+30, b.y+25, pColor));
+                    for (let j = 0; j < 12; j++) particles.push(new Particle(b.x+30, b.y+25, '#333'));
                     blocks.splice(i, 1);
                 }
                 break;
@@ -300,19 +304,16 @@
         }
     }
 
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
+    canvas.addEventListener('mousedown', handleInput);
+
     function showAd() {
         isPaused = true; bgm.pause(); pauseStartedAt = Date.now();
         document.getElementById('ad-modal').style.display = 'block';
-        const container = document.getElementById('kakao-ad-container');
-        container.innerHTML = `<ins class="kakao_ad_area" style="display:none;" data-ad-unit="DAN-tTvpwiRyg3nxCPs1" data-ad-width="320" data-ad-height="50"></ins>`;
-        const script = document.createElement('script');
-        script.src = "//t1.daumcdn.net/kas/static/ba.min.js";
-        script.async = true;
-        container.appendChild(script);
     }
 
     function closeAd() {
-        moveSpeed = Math.max(1.8, moveSpeed - 0.4);
+        moveSpeed = Math.max(2.0, moveSpeed - 0.5);
         pausedTimeTotal += (Date.now() - pauseStartedAt);
         isPaused = false; if (!isMuted) bgm.play().catch(()=>{});
         document.getElementById('ad-modal').style.display = 'none';
@@ -321,23 +322,9 @@
     function startGame() {
         document.getElementById('start-overlay').style.display = 'none';
         gameActive = true; if (audioCtx.state === 'suspended') audioCtx.resume();
-        bgm.muted = isMuted; if (!isMuted) bgm.play().catch(()=>{});
+        bgm.play().catch(()=>{});
         startTime = Date.now(); spawnBlock(); update();
     }
-
-    function toggleMute(e) {
-        if(e) e.stopPropagation();
-        isMuted = !isMuted;
-        localStorage.setItem('gameMuted', isMuted);
-        bgm.muted = isMuted;
-        if (isMuted) bgm.pause();
-        else if (gameActive && !isPaused) bgm.play().catch(() => {});
-        document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On";
-    }
-
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
-    canvas.addEventListener('mousedown', handleInput);
-    window.onload = () => { updateLanguage(); document.getElementById('mute-btn').innerText = isMuted ? "🔇 Off" : "🎵 On"; };
 </script>
 
 </body>
